@@ -10,10 +10,11 @@
 | IntelliJ IDEA  | 2019.3.3            |  
 | JDK            | 8 ONLY              |
 
-### External Libraries (If not using IDEA)
+### External Libraries
 * [TornadoFX - Lightweight JavaFX Framework for Kotlin](https://github.com/edvin/tornadofx)
 * [Kotlin Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
 * [JPL - Prolog for Java](https://jpl7.org/index)
+* [MaryTTS v5.2 - Open-Source TTS](https://github.com/marytts/marytts)
 * [Gradle Shadow - For building a fat JAR (optional)](https://github.com/johnrengelman/shadow)
 
 
