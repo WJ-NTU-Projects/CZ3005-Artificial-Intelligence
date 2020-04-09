@@ -21,15 +21,15 @@ class Constants {
         )
 
         const val FADE_DURATION: Double = 100.0
-        const val WINDOW_WIDTH: Double = 660.0
-        const val STAGE_TOP_HEIGHT: Double = 80.0
+        const val WINDOW_WIDTH: Double = 900.0
+        const val STAGE_TOP_HEIGHT: Double = 100.0
         const val STAGE_CENTER_HEIGHT: Double = 300.0
-        const val STAGE_BOTTOM_MARGIN: Double = 20.0
+        const val STAGE_BOTTOM_MARGIN: Double = 30.0
         const val STAGE_BOTTOM_HEIGHT: Double = 50.0
         const val STAGE_CONTENT_HEIGHT: Double = STAGE_CENTER_HEIGHT + STAGE_BOTTOM_HEIGHT + STAGE_BOTTOM_MARGIN
-        const val FINAL_BOX_MARGIN: Double = 30.0
-        const val FINAL_LEFT_WIDTH: Double = 140.0
-        const val FINAL_RIGHT_WIDTH: Double = 80.0
+        const val FINAL_BOX_MARGIN: Double = 50.0
+        const val FINAL_LEFT_WIDTH: Double = 200.0
+        const val FINAL_RIGHT_WIDTH: Double = 200.0
         const val FINAL_CENTER_WIDTH: Double = WINDOW_WIDTH - FINAL_LEFT_WIDTH - FINAL_RIGHT_WIDTH
         const val WINDOW_HEIGHT: Double = STAGE_TOP_HEIGHT + STAGE_CONTENT_HEIGHT
     }

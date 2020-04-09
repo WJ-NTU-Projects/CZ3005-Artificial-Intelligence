@@ -32,13 +32,13 @@ ask(Type, List, Count, Question, Cost):- selected(Type, nil, _), Type == sides -
 ask(Type, List, Count, Question, Cost):- selected(Type, nil, _), Type == drink -> (selected(meal, Meal, _), (Meal == healthy -> drinksHealthy(List, Cost); drinks(List, Cost)), Count = 1, Question = "And finally... your choice of beverage?").
 ask(Type, List, Count, Question, Cost):- (done(1, List), Type = final, Count = 0, Question = "Thank you! Please enjoy your meal and we hope to see you again!", Cost = 0).
 
-selected(meal, value, 0).
-selected(bread_type, multigrain, 0).
-selected(bread_size, foot_long, 4).
-selected(meat, turkey, 6).
-selected(cheese_toppings, monterey_cheddar, 2).
-selected(vegetables, jalapenos, 0).
-selected(sauce, ranch, 0).
-selected(topups, double_meat, 3).
-selected(sides, cookies, 0).
-selected(drink, coffee, 0).
+selected(meal, nil, 0).
+selected(bread_type, nil, 0).
+selected(bread_size, nil, 0).
+selected(meat, nil, 0).
+selected(cheese_toppings, nil, 0).
+selected(vegetables, nil, 0).
+selected(sauce, nil, 0).
+selected(topups, nil, 0).
+selected(sides, nil, 0).
+selected(drink, nil, 0).

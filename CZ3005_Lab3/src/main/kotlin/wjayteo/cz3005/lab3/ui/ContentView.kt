@@ -15,11 +15,9 @@ import wjayteo.cz3005.lab3.constants.Constants
 import wjayteo.cz3005.lab3.tools.File
 import wjayteo.cz3005.lab3.tools.Prolog
 import java.io.IOException
-import java.lang.Exception
-import java.lang.NumberFormatException
-import java.lang.RuntimeException
 import java.time.LocalDateTime
 import kotlin.math.ceil
+
 
 class ContentView: View() {
     companion object {
@@ -29,6 +27,8 @@ class ContentView: View() {
             timeNow.hour < 19 -> "Good afternoon!"
             else              -> "Good evening!"
         }
+
+        var nextButton: Rectangle? = null
     }
 
     private var selected: ArrayList<String> = arrayListOf()
@@ -36,7 +36,8 @@ class ContentView: View() {
     private var final: Boolean = false
     private val buttonList: ArrayList<Rectangle> = arrayListOf()
     private var noneList: ArrayList<Rectangle> = arrayListOf()
-    override val root: Parent = vbox {}
+    override val root: Parent = vbox {
+    }
 
     private fun next() {
         val ft = FadeTransition(Duration.millis(Constants.FADE_DURATION), MasterView.rootBox)
@@ -48,6 +49,7 @@ class ContentView: View() {
             buttonList.clear()
             noneList.clear()
             selected.clear()
+            nextButton = null
             noneSelected = false
             final = false
             runLater { loadUi() }
@@ -70,7 +72,7 @@ class ContentView: View() {
             MasterView.printExceptionMessage("${e.message}", "Failed to run prolog query: 'ask'."); return
         }
 
-        if (solutions.isEmpty() || solutions.size != 5 || solutions[0].size != 1 || solutions[2].size != 1 || solutions[3].size != 1) {
+        if (solutions.size != 5 || solutions[0].size != 1 || solutions[2].size != 1 || solutions[3].size != 1) {
             MasterView.printExceptionMessage("$solutions", "Prolog response is invalid."); return
         }
 
@@ -125,9 +127,9 @@ class ContentView: View() {
                 paddingRight = Constants.FINAL_BOX_MARGIN
             }
 
-            val box1 = vbox { prefWidth = Constants.FINAL_LEFT_WIDTH }
-            val box2 = vbox { prefWidth = Constants.FINAL_CENTER_WIDTH }
-            val box3 = vbox { prefWidth = Constants.FINAL_RIGHT_WIDTH }
+            val box1 = vbox { prefWidth = Constants.FINAL_LEFT_WIDTH; alignment = Pos.CENTER_LEFT }
+            val box2 = vbox { prefWidth = Constants.FINAL_CENTER_WIDTH; alignment = Pos.CENTER_LEFT }
+            val box3 = vbox { prefWidth = Constants.FINAL_RIGHT_WIDTH; alignment = Pos.CENTER_RIGHT }
 
             val solutions2: Array<Array<String>> = Prolog.query("getCosts", Variable("A"))
 
@@ -163,92 +165,83 @@ class ContentView: View() {
                     MasterView.printExceptionMessage("${e.message}", "Runtime Exception."); return
                 }
 
-
                 box1.add(label(header) {
                     style = "-fx-font-size: 12; -fx-font-weight: bold;"
-                    padding = Insets(2.0, 2.0, 2.0, 2.0)
+                    padding = Insets(4.0)
                     wrapTextProperty().value = true
-                    textAlignment = TextAlignment.LEFT
                 })
 
                 box2.add(label(text) {
                     style = "-fx-font-size: 12;"
-                    padding = Insets(2.0, 2.0, 2.0, 2.0)
+                    padding = Insets(4.0)
                     wrapTextProperty().value = true
-                    textAlignment = TextAlignment.LEFT
                 })
 
                 if (price == 0) {
                     box3.add(label("-") {
                         style = "-fx-font-size: 12;"
-                        padding = Insets(2.0, 2.0, 2.0, 2.0)
+                        padding = Insets(4.0)
                         wrapTextProperty().value = true
-                        textAlignment = TextAlignment.LEFT
                     })
-
-                    continue
+                } else {
+                    box3.add(label("+\$$price.00") {
+                        style = "-fx-font-size: 12;"
+                        padding = Insets(4.0)
+                        wrapTextProperty().value = true
+                    })
                 }
 
-                box3.add(label("+\$$price.00") {
-                    style = "-fx-font-size: 12;"
-                    padding = Insets(2.0, 2.0, 2.0, 2.0)
-                    wrapTextProperty().value = true
-                    textAlignment = TextAlignment.LEFT
+                box1.add(region {
+                    style = "-fx-background-color: #AAAAAA;"
+                    prefHeight = 1.0
+                })
+
+                box2.add(region {
+                    style = "-fx-background-color: #AAAAAA;"
+                    prefHeight = 1.0
+                })
+
+                box3.add(region {
+                    style = "-fx-background-color: #AAAAAA;"
+                    prefHeight = 1.0
                 })
             }
 
-            box1.add(label("===========") {
+            box1.add(label(" ") {
                 style = "-fx-font-size: 12; -fx-font-weight: bold;"
-                padding = Insets(10.0, 2.0, 10.0, 2.0)
+                padding = Insets(8.0, 4.0, 8.0, 4.0)
                 wrapTextProperty().value = true
-                textAlignment = TextAlignment.LEFT
             })
 
-            box2.add(label("================================================") {
-                style = "-fx-font-size: 12;"
-                padding = Insets(10.0, 2.0, 10.0, 2.0)
-                wrapTextProperty().value = true
-                textAlignment = TextAlignment.LEFT
-            })
-
-            box3.add(label("=====") {
-                style = "-fx-font-size: 12;"
-                padding = Insets(10.0, 2.0, 10.0, 2.0)
-                wrapTextProperty().value = true
-                textAlignment = TextAlignment.LEFT
-            })
-
-            box1.add(label("Total") {
+            box2.add(label("Total") {
                 style = "-fx-font-size: 12; -fx-font-weight: bold;"
-                padding = Insets(10.0, 2.0, 10.0, 2.0)
+                padding = Insets(8.0, 4.0, 8.0, 4.0)
                 wrapTextProperty().value = true
-                textAlignment = TextAlignment.LEFT
-            })
-
-            box2.add(label("----------------------------------------------------------------------------------") {
-                style = "-fx-font-size: 12;"
-                padding = Insets(10.0, 2.0, 10.0, 2.0)
-                wrapTextProperty().value = true
-                textAlignment = TextAlignment.LEFT
             })
 
             box3.add(label("\$${totalPrice}.00") {
                 style = "-fx-font-size: 12;"
-                padding = Insets(10.0, 2.0, 10.0, 2.0)
+                padding = Insets(8.0, 4.0, 8.0, 4.0)
                 wrapTextProperty().value = true
-                textAlignment = TextAlignment.LEFT
             })
 
             rootBox.add(box1)
             rootBox.add(box2)
             rootBox.add(box3)
             root.add(rootBox)
-        } else {
+        }
+
+        else {
             var index = 0
             val buttonWidth: Double = Constants.WINDOW_WIDTH / columnsList[0]
+            val vbox = vbox {
+                prefHeight = Constants.STAGE_CENTER_HEIGHT
+                minHeight = Constants.STAGE_CENTER_HEIGHT
+                alignment = Pos.CENTER_LEFT
+            }
 
             for (row in 0 until rows) {
-                root.add(hbox {
+                vbox.add(hbox {
                     val columns: Int = columnsList[row]
 
                     for (column in 0 until columns) {
@@ -269,7 +262,8 @@ class ContentView: View() {
                         stackpane {
                             alignment = Pos.CENTER
 
-                            val r = rectangle(width = buttonWidth, height = (Constants.STAGE_CENTER_HEIGHT / rows)) {
+                            //height = (Constants.STAGE_CENTER_HEIGHT / rows)
+                            val r = rectangle(width = buttonWidth, height = 75) {
                                 val fillColor = Constants.colors[4]
                                 fill = Color.rgb(200, 200, 200)
                                 stroke = Color.DARKGRAY
@@ -282,6 +276,49 @@ class ContentView: View() {
                                             noneSelected = true
                                         }
 
+                                        id = "selected"
+                                        selected.add("$solution,$cost")
+                                        opacity = 1.0
+                                        fill = fillColor
+
+                                        if (noneSelected) {
+                                            for (button in buttonList) {
+                                                if (button.id == "unselected") button.opacity = 0.4
+                                            }
+
+                                            return@onLeftClick
+                                        }
+
+                                        if (selected.size >= count) {
+                                            for (button in buttonList) {
+                                                if (button.id == "unselected") button.opacity = 0.4
+                                            }
+                                        } else {
+                                            for (button in noneList) {
+                                                button.opacity = 0.4
+                                            }
+                                        }
+
+                                        return@onLeftClick
+                                    }
+
+                                    if (id == "unselected" && selected.size >= count && count == 1) {
+                                        for (button in buttonList) {
+                                            button.id = "unselected"
+                                            button.opacity = 1.0
+                                            button.fill = Color.rgb(200, 200, 200)
+                                        }
+
+                                        for (button in noneList) {
+                                            button.id = "unselected"
+                                            button.opacity = 1.0
+                                            button.fill = Color.rgb(200, 200, 200)
+                                        }
+
+                                        selected.clear()
+                                        noneSelected = false
+
+                                        if (solution == "none") noneSelected = true
                                         id = "selected"
                                         selected.add("$solution,$cost")
                                         opacity = 1.0
@@ -346,6 +383,7 @@ class ContentView: View() {
                                 padding = Insets(8.0, 8.0, 8.0, 8.0)
                                 wrapTextProperty().value = true
                                 textAlignment = TextAlignment.CENTER
+                                isMouseTransparent = true
                             }
                         }
 
@@ -353,12 +391,13 @@ class ContentView: View() {
                     }
                 })
             }
+            root.add(vbox)
         }
 
         root.add(region { prefHeight = Constants.STAGE_BOTTOM_MARGIN })
 
         root.add(stackpane {
-            rectangle(width = Constants.WINDOW_WIDTH, height = Constants.STAGE_BOTTOM_HEIGHT) {
+            nextButton = rectangle(width = Constants.WINDOW_WIDTH, height = Constants.STAGE_BOTTOM_HEIGHT) {
                 fill = Constants.colors[1]
 
                 onLeftClick {
@@ -418,7 +457,7 @@ class ContentView: View() {
                         MasterView.printExceptionMessage("${e.message}", "Failed to perform IO on prolog file."); return@onLeftClick
                     }
 
-                    MasterView.tts.stop()
+                    MasterView.tts.stfu()
                     next()
                 }
 
@@ -427,7 +466,7 @@ class ContentView: View() {
             }
 
             label {
-                style = "-fx-font-size: 16;"
+                style = "-fx-font-size: 14;"
                 text = if (final) "PLACE NEW ORDER" else "NEXT"
                 textFill = Color.BLACK
                 wrapTextProperty().value = true
@@ -438,7 +477,7 @@ class ContentView: View() {
         val ft = FadeTransition(Duration.millis(Constants.FADE_DURATION), MasterView.rootBox)
         ft.fromValue = 0.0
         ft.toValue = 1.0
-        ft.setOnFinished { MasterView.tts.speak(MasterView.questionLabel.text) }
+        ft.setOnFinished { MasterView.tts.nag(MasterView.questionLabel.text) }
         ft.play()
     }
 }

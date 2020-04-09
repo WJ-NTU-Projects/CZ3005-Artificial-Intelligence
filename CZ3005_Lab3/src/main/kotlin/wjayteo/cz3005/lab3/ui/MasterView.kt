@@ -1,12 +1,10 @@
 package wjayteo.cz3005.lab3.ui
 
-import javafx.animation.FadeTransition
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.control.Label
 import javafx.scene.layout.VBox
-import javafx.util.Duration
 import tornadofx.*
 import wjayteo.cz3005.lab3.constants.Constants
 import wjayteo.cz3005.lab3.tools.File
@@ -54,6 +52,7 @@ class MasterView : View("Subway Eat Trash - Version 1.0.0") {
     private var progressIndicator: VBox by singleAssign()
 
     override val root: Parent = stackpane {
+        style = "-fx-font-family: 'Verdana';"
         prefWidth = Constants.WINDOW_WIDTH
         prefHeight = Constants.WINDOW_HEIGHT
 
@@ -99,6 +98,7 @@ class MasterView : View("Subway Eat Trash - Version 1.0.0") {
         runLater {
             rootBox.requestFocus()
             rootBox.isDisable = true
+
             progressIndicator.show()
 
             runAsync {

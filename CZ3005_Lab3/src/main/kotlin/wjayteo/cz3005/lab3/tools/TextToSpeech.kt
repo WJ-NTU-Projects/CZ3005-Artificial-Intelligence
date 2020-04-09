@@ -23,7 +23,7 @@ class TextToSpeech() {
         }
     }
 
-    fun speak(input: String) {
+    fun nag(input: String) {
         if (!::maryInterface.isInitialized) return
 
         try {
@@ -39,7 +39,7 @@ class TextToSpeech() {
         }
     }
 
-    fun stop() {
+    fun stfu() {
         if (::clip.isInitialized) {
             clip.stop()
         }
