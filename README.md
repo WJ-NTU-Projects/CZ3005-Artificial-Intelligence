@@ -1,1 +1,1 @@
-# CZ3005
+# CZ3005 - Artificial Intelligence Lab
