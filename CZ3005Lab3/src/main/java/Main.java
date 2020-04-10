@@ -26,15 +26,15 @@ public class Main extends Application {
     private boolean noneSelected = false;
     private boolean isFinalPage = false;
     private String[] prompts = new String[] {
-        "Please select meal",
-        "Please select ",
-        "Please select ",
-        "Please select ",
-        "Please select ",
-        "Please select ",
-        "Please select ",
-        "Please select ",
-        "Please select drinks"
+        "Please select a meal:",
+        "Please select size of sub:",
+        "Please select a type of bread:",
+        "Please select a meat base:",
+        "Please select veggies:",
+        "Please select up to 2 sauces:",
+        "Please select top-ups if any:",
+        "Please select a side:",
+        "Please select a drink:"
     };
 
     public static void main(String[] args) {
@@ -155,7 +155,7 @@ public class Main extends Application {
                 title.setText(prompts[8]);
                 break;
             case "final":
-                title.setText("Here is your order:");
+                title.setText("Here is your order. Thank you!");
                 break;
             default:
                 title.setText("Unknown?");
@@ -215,12 +215,20 @@ public class Main extends Application {
             System.out.println("Query: " + queryString);
             q = new Query(queryString);
             System.out.println(q.hasSolution());
+
+            if (stage.equals("drinks")) {
+                queryString = "retractall(selected(_,nil))";
+                System.out.println("Query: " + queryString);
+                q = new Query(queryString);
+                System.out.println(q.hasSolution());
+            }
+
             resetContent();
         });
 
         Label nextLabel = new Label();
         nextLabel.setText("Next");
-        nextLabel.setStyle("-fx-text-fill: #4e9b47; -fx-font-size: 14;");
+        nextLabel.setStyle("-fx-text-fill: #4e9b47; -fx-font-size: 14; -fx-font-weight: bold");
         nextLabel.setMouseTransparent(true);
 
         StackPane nextButtonStackPane = new StackPane();
