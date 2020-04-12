@@ -1,1 +1,1 @@
-java -jar CZ3005Lab3-1.0.jar
+start /B jre1.8.0_241\bin\javaw -jar CZ3005Lab3-1.0.jar
