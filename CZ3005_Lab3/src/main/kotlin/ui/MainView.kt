@@ -109,7 +109,6 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
     }
 
     init {
-        System.out.println(System.getProperty("java.library.path"))
         currentStage?.isResizable = false
         currentStage?.sizeToScene()
 
