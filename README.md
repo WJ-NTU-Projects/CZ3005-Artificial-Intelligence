@@ -2,8 +2,6 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/101011101001010/CZ3005/blob/master/LICENSE)
 
-[Prolog Response Parsing Reference](https://github.com/101011101001010/CZ3005/blob/master/CZ3005_Lab3/src/main/kotlin/wjayteo/cz3005/lab3/tools/Prolog.kt)
-
 ### IDE Setup (Updated 02 Mar 2020)
 | Stuff          | Minimum Requirement |	
 | -------------- | ------------------- |     
