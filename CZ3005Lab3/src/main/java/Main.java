@@ -509,5 +509,7 @@ public class Main extends Application {
         } else {
             tts.dictate(title.getText());
         }
+
+        
     }
 }
