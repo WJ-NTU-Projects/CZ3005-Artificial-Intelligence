@@ -7,7 +7,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import org.jpl7.Query;
 import org.jpl7.Variable;
@@ -20,8 +19,8 @@ public class Main extends Application {
 
     private TTS tts;
     private BorderPane borderPane;
-    private ArrayList<Rectangle> rectangles;
-    private ArrayList<Rectangle> nones;
+    private ArrayList<UIButton> buttons;
+    private ArrayList<UIButton> noneButtons;
     private ArrayList<String> selected;
     private boolean noneSelected = false;
     private boolean isFinalPage = false;
@@ -51,8 +50,8 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         tts = new TTS();
         selected = new ArrayList<>();
-        rectangles = new ArrayList<>();
-        nones = new ArrayList<>();
+        buttons = new ArrayList<>();
+        noneButtons = new ArrayList<>();
         primaryStage.setTitle("CZ3005");
         StackPane root = new StackPane();
         root.setStyle("-fx-font-family: 'Calibri';");
@@ -93,8 +92,8 @@ public class Main extends Application {
 
     private void resetContent() {
         borderPane.setCenter(null);
-        rectangles.clear();
-        nones.clear();
+        buttons.clear();
+        noneButtons.clear();
         selected.clear();
         noneSelected = false;
         isFinalPage = false;
@@ -421,17 +420,12 @@ public class Main extends Application {
                     }
 
                     String labelString = stringBuilder.toString();
-                    StackPane stackPane = new StackPane();
-                    stackPane.setAlignment(Pos.CENTER);
-                    Rectangle rectangle = new Rectangle();
-                    rectangle.setWidth((700.0 - (50.0 * (columnsArray[0] - 1))) / columnsArray[0]);
-                    //rectangle.setHeight((200.0 - (30.0 * (rows - 1))) / rows);
-                    rectangle.setHeight(80);
-                    rectangle.setFill(Color.rgb(200, 200, 200));
-                    rectangle.setStroke(Color.DARKGRAY);
-                    rectangle.setId("unselected");
-                    rectangle.setOnMouseClicked(event -> {
-                        if (rectangle.getId().equals("unselected") && selected.size() < count && !noneSelected) {
+                    double width = (700.0 - (50.0 * (columnsArray[0] - 1))) / columnsArray[0];
+                    double height = 60;
+                    UIButton button = new UIButton(width, height, stage, solution, labelString);
+                    StackPane stackPane = button.getParent();
+                    stackPane.setOnMouseClicked(event -> {
+                        if (button.getId().equals("unselected") && selected.size() < count && !noneSelected) {
                             if (solution.equals("none")) {
                                 if (selected.size() > 0) {
                                     return;
@@ -440,83 +434,34 @@ public class Main extends Application {
                                 noneSelected = true;
                             }
 
-                            rectangle.setId("selected");
                             selected.add(solution);
-                            rectangle.setOpacity(1.0);
-                            rectangle.setFill(Color.rgb(244, 232, 0));
-                            return;
-                        }
-
-                        if (rectangle.getId().equals("unselected") && selected.size() >= count && count == 1) {
-                            for (Rectangle r : rectangles) {
-                                r.setId("unselected");
-                                r.setOpacity(1.0);
-                                r.setFill(Color.rgb(200, 200, 200));
+                            button.setSelected(true);
+                        } else if (button.getId().equals("unselected") && selected.size() >= count && count == 1) {
+                            for (UIButton button1 : buttons) {
+                                button1.setSelected(false);
                             }
 
-                            for (Rectangle r : nones) {
-                                r.setId("unselected");
-                                r.setOpacity(1.0);
-                                r.setFill(Color.rgb(200, 200, 200));
+                            for (UIButton button1 : noneButtons) {
+                                button1.setSelected(false);
                             }
 
                             selected.clear();
                             noneSelected = solution.equals("none");
-                            rectangle.setId("selected");
                             selected.add(solution);
-                            rectangle.setOpacity(1.0);
-                            rectangle.setFill(Color.rgb(244, 232, 0));
-                            return;
-                        }
-
-                        if (rectangle.getId().equals("selected")) {
-                            rectangle.setId("unselected");
-
-                            if (solution.equals("none")) {
-                                noneSelected = false;
-                            }
-
+                            button.setSelected(true);
+                        } else if (button.getId().equals("selected")) {
+                            noneSelected = false;
                             selected.remove(solution);
-                            rectangle.setOpacity(1.0);
-                            rectangle.setFill(Color.rgb(200, 200, 200));
-                        }
-                    });
-
-                    rectangle.setOnMouseEntered(event -> {
-                        if (rectangle.getId().equals("selected") && selected.size() >= count && !solution.equals("none") && !noneSelected) {
-                            rectangle.setOpacity(0.8);
-                        } else if (selected.size() < count && !solution.equals("none") && !noneSelected) {
-                            rectangle.setOpacity(0.8);
-                        } else if (solution.equals("none") && (selected.size() == 0 || noneSelected)) {
-                            rectangle.setOpacity(0.8);
-                        }
-                    });
-
-                    rectangle.setOnMouseExited(event -> {
-                        if (rectangle.getId().equals("selected") && selected.size() >= count && !solution.equals("none") && !noneSelected) {
-                            rectangle.setOpacity(1.0);
-                        } else if (selected.size() < count && !solution.equals("none") && !noneSelected) {
-                            rectangle.setOpacity(1.0);
-                        } else if (solution.equals("none") && (selected.size() == 0 || noneSelected)) {
-                            rectangle.setOpacity(1.0);
+                            button.setSelected(false);
                         }
                     });
 
                     if (solution.equals("none")) {
-                        nones.add(rectangle);
+                        noneButtons.add(button);
                     } else {
-                        rectangles.add(rectangle);
+                        buttons.add(button);
                     }
 
-                    Label label = new Label();
-                    label.setText(labelString);
-                    label.setStyle("-fx-font-size: 14;");
-                    label.setPadding(new Insets(8.0, 8.0, 8.0, 8.0));
-                    label.setWrapText(true);
-                    label.setTextAlignment(TextAlignment.CENTER);
-                    label.setMouseTransparent(true);
-                    stackPane.getChildren().add(rectangle);
-                    stackPane.getChildren().add(label);
                     hBox.getChildren().add(stackPane);
 
                     if (column != columns - 1) {
@@ -526,6 +471,26 @@ public class Main extends Application {
                     }
 
                     index++;
+
+//                    rectangle.setOnMouseEntered(event -> {
+//                        if (rectangle.getId().equals("selected") && selected.size() >= count && !solution.equals("none") && !noneSelected) {
+//                            rectangle.setOpacity(0.8);
+//                        } else if (selected.size() < count && !solution.equals("none") && !noneSelected) {
+//                            rectangle.setOpacity(0.8);
+//                        } else if (solution.equals("none") && (selected.size() == 0 || noneSelected)) {
+//                            rectangle.setOpacity(0.8);
+//                        }
+//                    });
+//
+//                    rectangle.setOnMouseExited(event -> {
+//                        if (rectangle.getId().equals("selected") && selected.size() >= count && !solution.equals("none") && !noneSelected) {
+//                            rectangle.setOpacity(1.0);
+//                        } else if (selected.size() < count && !solution.equals("none") && !noneSelected) {
+//                            rectangle.setOpacity(1.0);
+//                        } else if (solution.equals("none") && (selected.size() == 0 || noneSelected)) {
+//                            rectangle.setOpacity(1.0);
+//                        }
+//                    });
                 }
 
                 bottom.getChildren().add(hBox);
@@ -534,6 +499,7 @@ public class Main extends Application {
                 bottom.getChildren().add(region);
             }
         }
+
         main.getChildren().add(top);
         main.getChildren().add(bottom);
         borderPane.setCenter(main);

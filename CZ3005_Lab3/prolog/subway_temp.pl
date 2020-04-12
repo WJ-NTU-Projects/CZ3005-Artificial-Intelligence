@@ -7,16 +7,16 @@
  * Parameter 2 - User-selected value
  * Parameter 3 - Cost of the selected value (for price calculation)
  */
-selected(meal, veggie, 0).
-selected(bread_type, italian, 0).
-selected(bread_size, six_inch, 0).
-selected(fillings, veggie_patty, 8).
-selected(cheese_toppings, [normal_cheese, processed_cheddar], 1).
-selected(vegetables, [cucumbers, lettuce, tomatoes, pickles], 0).
-selected(sauces, [honey_mustard, mustard, mayonnaise], 0).
-selected(topups, extra_cheese, 1).
-selected(sides, cookies, 0).
-selected(drink, pulpy_orange, 0).
+selected(meal, nil, 0).
+selected(bread_type, nil, 0).
+selected(bread_size, nil, 0).
+selected(fillings, nil, 0).
+selected(cheese_toppings, nil, 0).
+selected(vegetables, nil, 0).
+selected(sauces, nil, 0).
+selected(topups, nil, 0).
+selected(sides, nil, 0).
+selected(drink, nil, 0).
 
 /**
  * Knowledge base of computations based on user selections or user selections for other miscellaneous stuff. 
@@ -26,8 +26,8 @@ selected(drink, pulpy_orange, 0).
  * paymentMethod(method)    - The payment method selected by the user. Initialised as 'nil' as the script checks for 'nil' to determine if the user has made a selection.
  * repeat(bool)             - Sets to 1 (instructed by the program) if the program is being repeated (user chooses to place a new order at the end). Affects certain dialogues.
  */
-totalCost(10).
-paymentMethod(cash).
+totalCost(0).
+paymentMethod(nil).
 repeat(0).
 
 /**
