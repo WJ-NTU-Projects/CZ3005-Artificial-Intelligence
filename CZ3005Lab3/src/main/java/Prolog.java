@@ -11,12 +11,22 @@ public class Prolog {
 
     }
 
+    /**
+     * SETS A FILE TO BE CONSULTED BY PROLOG.
+     * @param file FILE TO BE CONSULTED
+     */
     public static void consult(String file) {
         String filePath = "prolog\\" + file;
         Query q = new Query("consult", new Term[] {new Atom(filePath)});
         q.hasSolution();
     }
 
+    /**
+     * SENDS A QUERY TO PROLOG WITH SOLUTIONS EXPECTED.
+     * @param q QUERY COMMAND
+     * @param variables VARIABLES IN THE QUERY
+     * @return 2D ARRAY CONSISTING OF SOLUTIONS FOR EACH VARIABLE. ONLY THE FIRST SOLUTION OF THE QUERY IS RETURNED.
+     */
     public static String[][] query(String q, Variable ...variables) {
         Query query = new Query(q, variables);
 
@@ -27,6 +37,8 @@ public class Prolog {
 
         Map<String, Term> solution = query.oneSolution();
 
+        // IF QUERY RESOLVES TO TRUE/FALSE WITH NO SOLUTION, DISPLAY RESULT IN THE CONSOLE.
+        // FOR DEBUGGING ONLY.
         if (solution.isEmpty()) {
             System.out.println("Solution resolves to true.");
             return new String[][] {};
@@ -34,6 +46,8 @@ public class Prolog {
 
         ArrayList<String[]> ret = new ArrayList<>();
 
+        // THE SOLUTION RETURNED NEEDS TO BE PARSED.
+        // PARSES UP TO THREE NESTED TERM ARRAYS DEEP
         for (String key : solution.keySet()) {
             Term term = solution.get(key);
             ArrayList<String> list = new ArrayList<>();
@@ -41,6 +55,8 @@ public class Prolog {
             if (term.args().length == 0) {
                 list.add(term.toString());
             } else {
+                // IF TERM IS A LIST, THE TERM STRING IS PREFIXED WITH ['|']
+                // IF TERM HAS A TEMPLATE SET, THE TERM STRING IS PREFIXED WITH ['X'] WHERE X IS THE DIVIDER OF THE TEMPLATE
                 char divider = term.toString().charAt(2);
                 Term[] arguments = (divider == '|') ? term.toTermArray() : term.args();
 

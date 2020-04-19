@@ -17,7 +17,7 @@ import tornadofx.*
 import constants.Constants
 import tools.File
 import tools.Prolog
-import tools.TextToSpeech
+import tools.TTS
 import ui.helper.UIFade
 import ui.helper.UITimeGreetings
 import kotlin.math.ceil
@@ -36,18 +36,31 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
     private lateinit var optionsBox: VBox
     private lateinit var bottomRectangle: Rectangle
     private lateinit var bottomLabel: Label
-    private lateinit var textToSpeech: TextToSpeech
+    private lateinit var textToSpeech: TTS
+
+    // Queried from prolog -> how many rows maximum to display the choices (means more columns for more choices).
     private lateinit var selectionRowsArray: IntArray
+
+    // List of selected options for the CURRENT stage -> used to insert selections into prolog KB,
     private val selectedOptionList: ArrayList<String> = arrayListOf()
+
+    // Set to true if the "None" option is selected (for choices that offer the "None" option)
     private var isNoneOptionSelected: Boolean = false
+
+    // Total cost of selections to be displayed at the end of the program
     private var totalCost: Int = 0
 
+    /**
+     * Parent view variable, as required by the tornadofx library for every class extending View.
+     */
     override val root: Parent = stackpane {
+        // Views support css styles with prefix "-fx"
         style = "-fx-font-family: 'Verdana'; -fx-background-color: #FFFFFF; -fx-font-size: 14;"
         prefWidth = Constants.WINDOW_WIDTH
         prefHeight = Constants.WINDOW_HEIGHT
 
         contentNode = vbox {
+            // Prompt or question area
             vbox {
                 prefWidth = Constants.WINDOW_WIDTH
                 prefHeight = Constants.MAIN_TOP_HEIGHT
@@ -61,15 +74,18 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
                 }
             }
 
+            // Choices area
             vbox {
                 prefWidth = Constants.WINDOW_WIDTH
                 prefHeight = Constants.MAIN_CENTER_HEIGHT
                 minHeight = Constants.MAIN_CENTER_HEIGHT
                 maxHeight = Constants.MAIN_CENTER_HEIGHT
                 alignment = Pos.CENTER_LEFT
+                // optionsBox contains views for the choices -> CLEAR WHEN CHANGING CONTENT
                 optionsBox = vbox()
             }
 
+            // Bottom button area
             vbox {
                 prefWidth = Constants.WINDOW_WIDTH
                 prefHeight = Constants.MAIN_BOTTOM_HEIGHT
@@ -96,6 +112,7 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
             }
         }
 
+        // Progress indicator used at launch while initialising stuffs.
         progressIndicatorView = vbox {
             style = "-fx-background-color: #FFFFFF;"
             alignment = Pos.CENTER
@@ -108,22 +125,32 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
         }
     }
 
+    /**
+     * Constructor
+     * Performs view and TTS initialisation, setting of Prolog fallback script and querying of initial content.
+     */
     init {
         currentStage?.isResizable = false
         currentStage?.sizeToScene()
 
+        // runLater makes sure we are back in UI thread.
         runLater {
             contentNode.requestFocus()
             progressIndicatorLabel.text = "Just a moment! Initialising some modules..."
 
+            // Heavy load running asynchronously to prevent UI lock.
+            // DO NOT RUN UI COMPONENTS STUFF ASYNCHRONOUSLY -> MUST RUN IN UI THREAD
             runAsync {
-                textToSpeech = TextToSpeech()
+                textToSpeech = TTS()
                 Prolog.fallback = "subway_temp.pl"
                 resetContent()
             }.setOnSucceeded {
+                // BACK IN UI THREAD
                 val responseRows: Array<Array<String>> = Prolog.query("selectionRows", Variable("A"))
                 selectionRowsArray = responseRows[0].map { it.toInt() }.toIntArray()
 
+                // Fades out the progress indicator and load content when the animation ends (in curly braces).
+                // EventHandler contains code (within the braces) to be executed at the end of the animation.
                 UIFade.fadeOut(progressIndicatorView, EventHandler {
                     progressIndicatorView.hide()
                     loadContentFromProlog()
@@ -132,6 +159,9 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
         }
     }
 
+    /**
+     * Copies content from "subway.pl" (unmodified file) into "subway_temp.pl" (to be modified as the program progresses).
+     */
     private fun resetContent() {
         val lines: List<String> = File.readPrologFile("subway.pl")
         var s = ""
@@ -144,13 +174,22 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
         File.replacePrologFileContent("subway_temp.pl", s)
     }
 
+    /**
+     * Sends a query to the prolog engine for content to be displayed.
+     */
     private fun loadContentFromProlog() {
+        // Clears views of previous choices (if any), list of previously selected options and resets the flag if "None" choice is selected previously.
         optionsBox.getChildList()?.clear()
         selectedOptionList.clear()
         isNoneOptionSelected = false
 
+        // Sets the consulted file (although it'll fallback to whatever file is set in init if not called).
         Prolog.consult("subway_temp.pl")
+
+        // Variables are named A, B, C... as JPL apparently arranges the returned solutions in alphabetically order.
         val prologResponse: Array<Array<String>> = Prolog.query("ask", Variable("A"), Variable("B"), Variable("C"), Variable("D"), Variable("E"), Variable("F"))
+
+        // Hard decoding of response because why not.
         val responseType: String = prologResponse[0][0]
         val responseOptions: Array<String> = prologResponse[1]
         val responseMaxSelection: Int = prologResponse[2][0].toInt()
@@ -158,6 +197,7 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
         val responseItemPrices: IntArray = prologResponse[4].map { it.toInt() }.toIntArray()
         val responseId: Int = prologResponse[5][0].toInt()
 
+        // Bottom button text changes depending on the stage/type, and loads the views for choices to be displayed into the optionsBox.
         when (responseType) {
             "final" -> {
                 bottomLabel.text = "MAKE PAYMENT"
@@ -187,23 +227,31 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
                 else -> responsePrompt
             }
 
+        // Displaying of prompt and reading it out using TTS
         promptLabel.text = prompt
         UIFade.fadeIn(contentNode, EventHandler { textToSpeech.nag(promptLabel.text) })
     }
 
+    /**
+     * Initialises views for the choices to be displayed and adds them to the optionsBox defined in the parent node.
+     */
     private fun loadSelectionContent(responseType: String, responseOptions: Array<String>, responseMaxSelection: Int, responseItemPrices: IntArray, responseId: Int) {
         var rows: Int = selectionRowsArray[responseId]
         var columnsLimit = 99
         val columnsList = ArrayList<Int>()
 
+        // If rows are defined as 99 (no limit), dynamically assigns rows based on choices size.
+        // Limits each row to 3 or 4 columns (if mod 3 = 0 then limit to 3, else 4).
         if (rows == 99) {
             val moduloThree: Int = responseOptions.size % 3
             columnsLimit = if (moduloThree == 0) 3 else 4
             rows = ceil(1.0 * responseOptions.size / columnsLimit).toInt()
         }
 
+        // If choices size is 2, hard set it to 1 row max.
         if (responseOptions.size == 2) rows = 1
 
+        // Determine how many columns per row based on calculated or obtained row above.
         if (rows > 1) {
             var temp = responseOptions.size
 
@@ -221,12 +269,20 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
             columnsList.add(responseOptions.size)
         }
 
+        // Each button is actually a rectangle...
+        // Width and height of rectangles need to be explicitly set because default is 1.
         val rectangleWidth: Double = (1.0 * Constants.WINDOW_WIDTH / columnsList[0])
         val rectangleHeight: Double = (1.0 * Constants.MAIN_CENTER_HEIGHT / rows)
+
+        // List of rectangles and its labels that are not of the "None" option, for opacity manipulation purpose..
         val rectangleList = ArrayList<Node>()
-        val noneList = ArrayList<Node>()
         val rectangleLabelList = ArrayList<Label>()
+
+        // List of rectangles and its labels that are of the "None" option, for opacity manipulation purpose.
+        val noneList = ArrayList<Node>()
         val noneLabelList = ArrayList<Label>()
+
+        // Keeps track of the actual index of the choices in the list since we're dealing with rows and columns.
         var index = 0
 
         for (row in 0 until rows) {
@@ -236,14 +292,20 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
             for (column in 0 until columns) {
                 if (index >= responseOptions.size) break
                 val option: String = responseOptions[index]
+
+                // Capitalises each word in the choice.
+                // Split because the words are joined using '_' so capitalize() won't work.
                 var displayString: String = option.split("_").joinToString(" ") { it.trim().capitalize() }
                 val displayCost: Int = if (responseItemPrices.size == 1) responseItemPrices[0] else responseItemPrices[index]
                 displayString += if (displayCost > 0) "\n+\$${displayCost}.00" else "\n "
 
+                // To stack the label on top of the rectangle to create a button.
                 val stackPane: StackPane = stackpane {
                     alignment = Pos.CENTER
                     var rectangle: Node
 
+                    // If an image is available (based on contents obtained from Prolog), the rectangle is a stackpane that stacks the rectangle and an imageview.
+                    // Else, rectangle is just a rectangle.
                     try {
                         val image = Image("${responseType}_${option}.png")
 
@@ -273,11 +335,17 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
                         }
                     }
 
+                    // ID is used to control which button is selected or not. (ID is actually used for css but it serves the purpose in this case.)
                     rectangle.id = "unselected"
+
+                    // Separate function otherwise this function gets super long and hard to debug.
                     rectangle.onLeftClick { handleOptionClick(rectangle, responseType, option, displayCost, responseMaxSelection, rectangleList, noneList, rectangleLabelList, noneLabelList) }
+
+                    // On hover kind of effect.
                     rectangle.setOnMouseEntered { if (checkHoverLegal(rectangle.id, option, responseMaxSelection)) opacity = 0.8 }
                     rectangle.setOnMouseExited { if (checkHoverLegal(rectangle.id, option, responseMaxSelection)) opacity = 1.0 }
 
+                    // Label to be stacked on the rectangle.
                     val rectangleLabel: Label = label(displayString) {
                         if (responseType == "end") {
                             style = "-fx-font-weight: bold;"
@@ -290,19 +358,26 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
                         isMouseTransparent = true
                     }
 
+                    // Adds the rectangle to the lists!
                     if (option == "none") noneList.add(rectangle) else rectangleList.add(rectangle)
                     if (option == "none") noneLabelList.add(rectangleLabel) else rectangleLabelList.add(rectangleLabel)
                     StackPane.setAlignment(rectangleLabel, Pos.BOTTOM_CENTER)
                 }
 
+                // Adds the button to the hbox (row container).
                 rowRoot.add(stackPane)
                 index++
             }
 
+            // Adds the row container (hbox) into optionsBox.
             optionsBox.add(rowRoot)
         }
     }
 
+    /**
+     * Loads the order summary into optionsBox.
+     * Summary page is divided into three sections -> LEFT (item type), CENTER (items selected), RIGHT (cost).
+     */
     private fun loadFinalContent(responseOptions: Array<String>) {
         val contentRoot: Node = hbox {
             paddingLeft = Constants.FINAL_BOX_MARGIN
@@ -370,6 +445,7 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
             })
         }
 
+        // Adding the total cost display.
         leftBox.add(label(" ") {
             style = "-fx-font-size: 12; -fx-font-weight: bold;"
             padding = Insets(8.0, 4.0, 8.0, 4.0)
@@ -391,15 +467,22 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
         optionsBox.add(contentRoot)
     }
 
+    /**
+     * Button click event handler.
+     */
     private fun handleOptionClick(rectangle: Node, responseType: String, option: String, displayCost: Int, responseMaxSelection: Int, rectangleList: ArrayList<Node>, noneList: ArrayList<Node>, rectangleLabelList: ArrayList<Label>, noneLabelList: ArrayList<Label>) {
+        // End of program -> close application.
         if (responseType == "end") {
             close()
             return
         }
 
+        // If button clicked is unselected...
         if (rectangle.id == "unselected") {
+            // If button is of "None" option and there are buttons 'selected' already (for multi-selection stages), DO NOTHING!
             if (option == "none" && selectedOptionList.isNotEmpty()) return
 
+            // For single-selection stages, sets all buttons as unselected (current button clicked will be selected later).
             if (selectedOptionList.size >= responseMaxSelection && responseMaxSelection == 1) {
                 for ((index, r) in rectangleList.withIndex()) setRectangleState(r, rectangleLabelList[index], RectangleState.DEFAULT)
                 for ((index, r) in noneList.withIndex()) setRectangleState(r, noneLabelList[index], RectangleState.DEFAULT)
@@ -407,35 +490,53 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
                 isNoneOptionSelected = false
             }
 
+            // If "None" options is selected, or number of selected choices permitted is maxed for a stage, DO NOTHING!
             if (selectedOptionList.size >= responseMaxSelection || isNoneOptionSelected) return
+
+            /* SETS THE BUTTON AS SELECTED AND ADD THE CHOICE INTO THE SELECTED OPTION LIST */
+            // Set the flag to true if it is of "None" option.
             if (option == "none") isNoneOptionSelected = true
             selectedOptionList.add("$option,$displayCost")
             setRectangleState(rectangle, null, RectangleState.SELECTED)
 
+            // Sets non-selected views to "disabled" state by reducing opacity when number of selected choices permitted is maxed.
+            // Also, disable the "None" option if it is not selected for multi-selection stages.
             when {
                 isNoneOptionSelected                            -> for ((index, r) in rectangleList.withIndex()) if (r.id == "unselected") setRectangleState(r, rectangleLabelList[index], RectangleState.DISABLED)
                 selectedOptionList.size >= responseMaxSelection -> for ((index, r) in rectangleList.withIndex()) if (r.id == "unselected") setRectangleState(r, rectangleLabelList[index], RectangleState.DISABLED)
                 else                                            -> for ((index, r) in noneList.withIndex()) setRectangleState(r, noneLabelList[index], RectangleState.DISABLED)
             }
         } else if (rectangle.id == "selected") {
+            // Sets non-selected views to "enabled" state since quota is not maxed now.
             for ((index, r) in rectangleList.withIndex()) if (r.id == "unselected") setRectangleState(r, rectangleLabelList[index], RectangleState.DEFAULT)
+
+            // Just unset the flag because "None" will not be selected no matter what now.
             isNoneOptionSelected = false
+
+            // Remove the option associated to the clicked button from the selected option list.
             selectedOptionList.remove("$option,$displayCost")
             setRectangleState(rectangle, null, RectangleState.DEFAULT)
 
+            // For multi-selection stages, if selected option list is empty, enable the "None" option.
             if (option != "none" && selectedOptionList.isEmpty()) {
                 for ((index, r) in noneList.withIndex()) setRectangleState(r, noneLabelList[index], RectangleState.DEFAULT)
             }
         }
     }
 
+    /**
+     * Finishes the current stage, modifying the Prolog KB if necessary and loads content for the next stage (content determined by Prolog script).
+     */
     private fun handleNextClick(responseType: String) {
+        // If no item is selected, throw an error (for pages that requires selection).
         if (responseType != "final" && responseType != "end" && selectedOptionList.isEmpty()) {
             error("Please select an item!"); return
         }
 
+        // Stops the TTS if it is still reading.
         textToSpeech.stfu()
 
+        // If user chooses to restart the program at the end...
         if (responseType == "end") {
             totalCost = 0
             resetContent()
@@ -444,6 +545,9 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
             return
         }
 
+        // Order summary and payment stage have slightly different procedures.
+        // Otherwise, it gathers every option selected in the selected option list and updates the Prolog knowledge base accordingly via file IO.
+        // Options are gathered in a list to be inserted unless only one option is selected.
         when (responseType) {
             "final" -> Prolog.updateTotalCost(totalCost)
 
@@ -498,6 +602,9 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
         UIFade.fadeOut(contentNode, EventHandler { loadContentFromProlog() })
     }
 
+    /**
+     * Modifies the ID, opacity and fill colour of the rectangle based on the desired state as defined in the enum RectangleState.
+     */
     private fun setRectangleState(rectangle: Node, rectangleLabel: Label?, state: RectangleState) {
         val id: String
         val opacity: Double
@@ -539,6 +646,9 @@ class MainView : View("Subway Sandwich Interactor - Teo Wei Jie, U1822263C, SSP2
         }
     }
 
+    /**
+     * Checks if the rectangle of a button should perform the "hover" effect.
+     */
     private fun checkHoverLegal(rectangleId: String, option: String, responseMaxSelection: Int): Boolean {
         if (option != "none" && !isNoneOptionSelected) {
             when {

@@ -2,6 +2,9 @@ package constants
 
 import javafx.scene.paint.Color
 
+/**
+ * Static constants referenced by other classes.
+ */
 class Constants {
     companion object {
         val RECTANGLE_DEFAULT_COLOR: Color = Color.LIGHTGRAY
@@ -25,9 +28,8 @@ class Constants {
         const val WINDOW_WIDTH: Double = 1200.0
         const val MAIN_TOP_HEIGHT: Double = 220.0
         const val MAIN_CENTER_HEIGHT: Double = 300.0
-        const val MAIN_BOTTOM_MARGIN: Double = 0.0
         const val MAIN_BOTTOM_HEIGHT: Double = 80.0
-        const val MAIN_INTERACTIVE_HEIGHT: Double = MAIN_CENTER_HEIGHT + MAIN_BOTTOM_HEIGHT + MAIN_BOTTOM_MARGIN
+        private const val MAIN_INTERACTIVE_HEIGHT: Double = MAIN_CENTER_HEIGHT + MAIN_BOTTOM_HEIGHT
         const val FINAL_BOX_MARGIN: Double = 50.0
         const val FINAL_LEFT_WIDTH: Double = 200.0
         const val FINAL_RIGHT_WIDTH: Double = 200.0

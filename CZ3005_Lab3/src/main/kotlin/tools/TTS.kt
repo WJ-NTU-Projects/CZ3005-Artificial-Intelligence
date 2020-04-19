@@ -8,9 +8,13 @@ import javax.sound.sampled.AudioInputStream
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 
-class TextToSpeech() {
-    private lateinit var maryInterface: MaryInterface
+/**
+ * Text-To-Speech synthesiser using MaryTTS.
+ */
+class TTS {
+    // Apparently Clip has better quality than built-in MaryTTS audio player.
     private lateinit var clip: Clip
+    private lateinit var maryInterface: MaryInterface
 
     init {
         try {
@@ -23,6 +27,10 @@ class TextToSpeech() {
         }
     }
 
+    /**
+     * Synthesises text and reads it out.
+     * @param input Text to be read.
+     */
     fun nag(input: String) {
         if (!::maryInterface.isInitialized) return
 
@@ -30,7 +38,7 @@ class TextToSpeech() {
             val audio: AudioInputStream = maryInterface.generateAudio(input)
             clip = AudioSystem.getClip()
             clip.open(audio)
-            clip.loop(0)
+            clip.loop(0) // means no loop
         } catch (e: SynthesisException) {
             e.printStackTrace()
             println("========== EXCEPTION ==========")
@@ -39,7 +47,11 @@ class TextToSpeech() {
         }
     }
 
+    /**
+     * Stops any ongoing reading of text.
+     */
     fun stfu() {
+        // Different from clip == null! Kotlin is null-safe unless the variable type has a question mark: ex. Clip? instead of Clip.
         if (::clip.isInitialized) {
             clip.stop()
         }

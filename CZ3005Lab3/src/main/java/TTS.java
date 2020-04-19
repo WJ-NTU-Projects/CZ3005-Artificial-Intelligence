@@ -13,6 +13,9 @@ public class TTS {
     private MaryInterface marytts;
     private Clip clip;
 
+    /**
+     * INITIALISES THE TEXT-TO-SPEECH SYNTHESISER
+     */
     public TTS() {
         try {
             marytts = new LocalMaryInterface();
@@ -21,6 +24,10 @@ public class TTS {
         }
     }
 
+    /**
+     * SYNTHESISES TEXT TO AUDIO AND PLAYS IT
+     * @param text TEXT TO SYNTHESISE
+     */
     public void dictate(String text) {
         AudioInputStream audio;
 
@@ -40,6 +47,9 @@ public class TTS {
         }
     }
 
+    /**
+     * STOPS THE TEXT-TO-SPEECH AUDIO
+     */
     public void cut() {
         if (clip != null) {
             clip.stop();
